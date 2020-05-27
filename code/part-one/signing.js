@@ -15,9 +15,12 @@ const { randomBytes, createHash } = require('crypto');
  */
 const createPrivateKey = () => {
   // Enter your solution here
-
+  let privKey;
+  do {
+    privKey = randomBytes(32)
+  } while (!secp256k1.privateKeyVerify(privKey))
+  return (privKey.toString('hex'));
 };
-
 /**
  * A function which takes a hexadecimal private key and returns its public pair
  * as a 66 character hexadecimal string.
@@ -33,6 +36,7 @@ const createPrivateKey = () => {
  */
 const getPublicKey = privateKey => {
   // Your code here
+  return secp256k1.publicKeyCreate(Buffer.from(privateKey, 'hex')).toString('hex');
 
 };
 
@@ -50,8 +54,11 @@ const getPublicKey = privateKey => {
  *   not the message itself!
  */
 const sign = (privateKey, message) => {
-  // Your code here
-
+  // hash message using sha 256
+  const hash = createHash('sha256').update(message).digest();
+  console.log(hash)
+  return secp256k1.sign(hash, Buffer.from(privateKey, 'hex')).signature.toString('hex');
+  // sign using ecdsaSign using hashed message and privateKey
 };
 
 /**
