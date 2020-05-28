@@ -58,6 +58,7 @@ const sign = (privateKey, message) => {
   const hash = createHash('sha256').update(message).digest();
   return secp256k1.sign(hash, Buffer.from(privateKey, 'hex')).signature.toString('hex');
   // sign using ecdsaSign using hashed message and privateKey
+  
 };
 
 /**

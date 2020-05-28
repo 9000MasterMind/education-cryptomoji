@@ -19,7 +19,16 @@ class MineableTransaction {
    */
   constructor(privateKey, recipient = null, amount) {
     // Enter your solution here
-
+    if (recipient === null) {
+      this.source = null;
+      this.recipient = signing.getPublicKey(privateKey);
+    } else {
+      this.source = signing.getPublicKey(privateKey);
+      this.recipient = recipient;
+    }
+    this.amount = amount;
+    const message = `${this.source}${this.recipient}${this.amount}`;
+    this.signature = signing.sign(privateKey, message);
   }
 }
 
@@ -35,7 +44,9 @@ class MineableBlock extends Block {
    */
   constructor(transactions, previousHash) {
     // Your code here
-
+    super(transactions, previousHash);
+    this.nonce = null;
+    this.hash = null;
   }
 }
 
@@ -63,7 +74,11 @@ class MineableChain extends Blockchain {
    */
   constructor() {
     // Your code here
-
+    super()
+    this.blocks = [new MineableBlock([], null)]
+    this.difficulty = 2;
+    this.reward = 3;
+    this.pendingTransactions = [];
   }
 
   /**
@@ -79,7 +94,7 @@ class MineableChain extends Blockchain {
    */
   addTransaction(transaction) {
     // Your code here
-
+    this.pendingTransactions.push(transaction);
   }
 
   /**
@@ -98,8 +113,24 @@ class MineableChain extends Blockchain {
    */
   mine(privateKey) {
     // Your code here
-
+    //create new transaction rewarding privateKey owner this.reward
+    let rewardTransaction = new MineableTransaction(privateKey, null, this.reward);
+    //combine new transaction with pending transactions
+    let mineTransactions = Array.from(this.pendingTransactions);
+    mineTransactions.push(rewardTransaction);
+    //create a new block with transactions
+    let block = new MineableBlock(mineTransactions, this.getHeadBlock().hash);
+    let nonce, hash;
+    do {
+      nonce = Math.floor(Math.random() * 10000);
+      hash = block.calculateHash(nonce);
+    } while (hash.slice(0, this.difficulty) !== ''.padStart(this.difficulty, '0')) //'0'.repeat(this.difficulty)
+    //add block
+    this.blocks.push(block);
+    //clear pending
+    this.pendingTransactions = [];
   }
+
 }
 
 /**

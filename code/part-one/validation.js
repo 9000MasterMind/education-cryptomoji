@@ -12,7 +12,14 @@ const signing = require('./signing');
  */
 const isValidTransaction = transaction => {
   // Enter your solution here
-
+  if (transaction.amount <= 0 ||
+    transaction.signature.length !== 128 ||
+    transaction.source.length !== 66 ||
+    transaction.recipient.length !== 66
+  ) {
+    return false;
+  }
+  return signing.verify(transaction.source, `${transaction.source}${transaction.recipient}${transaction.amount}`, transaction.signature);
 };
 
 /**
@@ -23,22 +30,36 @@ const isValidTransaction = transaction => {
  */
 const isValidBlock = block => {
   // Your code here
-
+  let temp = block.hash
+  if (temp !== block.calculateHash(block.nonce)) {
+    block.hash = temp;
+    return false;
+  }
+  for (let i = 0; i < block.transactions.length; i++) {
+    if (!isValidTransaction(block.transactions[i])) return false;
+  }
+  return true;
 };
 
 /**
  * One more validation function. Accepts a blockchain, and returns true
  * or false. It should reject any blockchain that:
- *   - is a missing genesis block
+ *   - is missing a genesis block
  *   - has any block besides genesis with a null hash
  *   - has any block besides genesis with a previousHash that does not match
- *     the previous hash
+ *     the previous hash 
  *   - contains any invalid blocks
  *   - contains any invalid transactions
  */
 const isValidChain = blockchain => {
-  // Your code here
+  // Your Awesome code here
+  if (blockchain.blocks[0].previousHash !== null || blockchain.blocks[0].transactions.length !== 0) return false;
+  for (let i = 1; i < blockchain.blocks.length; i++) {
+    if (blockchain.blocks[i].hash === null ||
+      blockchain.blocks[i].previousHash !== blockchain.blocks[i - 1].hash || !isValidBlock(blockchain.blocks[i])) return false;
+  }
 
+  return true;
 };
 
 /**
@@ -48,7 +69,13 @@ const isValidChain = blockchain => {
  */
 const breakChain = blockchain => {
   // Your code here
-
+  // const signer = signing.createPrivateKey();
+  // const recipient = signing.getPublicKey(signing.createPrivateKey());
+  // const amount = Math.ceil(Math.random() * 100);
+  // const newTransaction = new Transaction(signer, recipient, amount);
+  blockchain.blocks = [blockchain.blocks[0]];
+  // blockchain.blocks.pop();
+  // blockchain.addBlock([{source: 'you', recipient: 'me', amount: 1000000, signature: 'trust me, its real'}])
 };
 
 module.exports = {

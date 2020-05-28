@@ -50,7 +50,6 @@ describe('Blockchain module', function() {
 
       transactions = [ new Transaction(signer, recipient, amount) ];
       previousHash = randomBytes(64).toString('hex');
-
       block = new Block(transactions, previousHash);
     });
 

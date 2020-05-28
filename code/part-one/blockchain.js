@@ -23,7 +23,11 @@ class Transaction {
    */
   constructor(privateKey, recipient, amount) {
     // Enter your solution here
-
+    this.source = signing.getPublicKey(privateKey);
+    this.recipient = recipient;
+    this.amount = amount;
+    const message = `${this.source}${this.recipient}${this.amount}`;
+    this.signature = signing.sign(privateKey, message);
   }
 }
 
@@ -45,9 +49,13 @@ class Block {
    */
   constructor(transactions, previousHash) {
     // Your code here
+    this.transactions = transactions;
+    this.previousHash = previousHash;
+    this.nonce = 9000;
+    this.calculateHash(this.nonce);
 
   }
-
+  
   /**
    * Accepts a nonce, and generates a unique hash for the block. Updates the
    * hash and nonce properties of the block accordingly.
@@ -59,7 +67,11 @@ class Block {
    */
   calculateHash(nonce) {
     // Your code here
-
+    this.nonce = nonce;    
+    let transactions = JSON.stringify(this.transactions);
+    let message = `${nonce}${transactions}${this.previousHash}`;
+    this.hash = createHash('sha256').update(message).digest('hex');
+    return this.hash;
   }
 }
 
@@ -79,7 +91,7 @@ class Blockchain {
    */
   constructor() {
     // Your code here
-
+    this.blocks = [new Block([],null)]
   }
 
   /**
@@ -87,7 +99,7 @@ class Blockchain {
    */
   getHeadBlock() {
     // Your code here
-
+    return this.blocks[this.blocks.length - 1];
   }
 
   /**
@@ -96,7 +108,7 @@ class Blockchain {
    */
   addBlock(transactions) {
     // Your code here
-
+    this.blocks.push(new Block(transactions, this.getHeadBlock().hash));
   }
 
   /**
@@ -110,7 +122,28 @@ class Blockchain {
    */
   getBalance(publicKey) {
     // Your code here
-
+    // iterate over each block (could skip genesis)
+    return this.blocks.reduce((acc, curr, index) => {
+      if (index === 0){
+        return acc;
+      }
+      // iterate over every transaction in the block
+      let blockTotal = curr.transactions.reduce((acc, curr) => {
+        let difference;
+        // Subtract transaction.amount from balance if publickey is the transaction.source (transaction: {source, recipient, amount})
+        if (publicKey === curr.source){
+          difference = curr.amount;
+        } 
+        if (publicKey === curr.recipient){
+          difference = -curr.amount;
+        }
+        // Add transaction.amount to balance if publickey is transaction.recipient
+        return acc - difference;
+      }, 0)
+      //return acc + overall block balance
+      return acc + blockTotal;
+    } , 0)
+    // return balance
   }
 }
 
