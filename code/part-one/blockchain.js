@@ -55,7 +55,7 @@ class Block {
     this.calculateHash(this.nonce);
 
   }
-  
+
   /**
    * Accepts a nonce, and generates a unique hash for the block. Updates the
    * hash and nonce properties of the block accordingly.
@@ -67,7 +67,7 @@ class Block {
    */
   calculateHash(nonce) {
     // Your code here
-    this.nonce = nonce;    
+    this.nonce = nonce;
     let transactions = JSON.stringify(this.transactions);
     let message = `${nonce}${transactions}${this.previousHash}`;
     this.hash = createHash('sha256').update(message).digest('hex');
@@ -133,7 +133,7 @@ class Blockchain {
         // Subtract transaction.amount from balance if publickey is the transaction.source (transaction: {source, recipient, amount})
         if (publicKey === curr.source){
           difference = curr.amount;
-        } 
+        }
         if (publicKey === curr.recipient){
           difference = -curr.amount;
         }
@@ -146,6 +146,7 @@ class Blockchain {
     // return balance
   }
 }
+
 
 module.exports = {
   Transaction,

@@ -74,9 +74,10 @@ class MineableChain extends Blockchain {
    */
   constructor() {
     // Your code here
-    super()
-    this.blocks = [new MineableBlock([], null)]
+    super();
+    this.blocks = [new MineableBlock([], null)];
     this.difficulty = 2;
+    this.range = 10000;
     this.reward = 3;
     this.pendingTransactions = [];
   }
@@ -120,9 +121,10 @@ class MineableChain extends Blockchain {
     mineTransactions.push(rewardTransaction);
     //create a new block with transactions
     let block = new MineableBlock(mineTransactions, this.getHeadBlock().hash);
-    let nonce, hash;
+    let nonce = 0;
+    let hash;
     do {
-      nonce = Math.floor(Math.random() * 10000);
+      nonce++;
       hash = block.calculateHash(nonce);
     } while (hash.slice(0, this.difficulty) !== ''.padStart(this.difficulty, '0')) //'0'.repeat(this.difficulty)
     //add block
@@ -150,7 +152,41 @@ class MineableChain extends Blockchain {
  */
 const isValidMineableChain = blockchain => {
   // Your code here
+  // loop through the block chain
+  // return false if no leading zeros for hash
+  // initialize  nullTransaction = 0
+  // loop through transactions
+  // if nullTransaction > 1 return false
+  // if transaction.source is null
+  // increment nullTransaction
+  // see if it does not matches blockchain.reward; return false
+  // if blockchain.getBalance(transaction.source) <= 0 return false
+  // return true
+  for (let block of blockchain.blocks) {
+    if (block.hash === null) {
+      continue;
+    }
+    if (block.hash.substring(0, blockchain.difficulty)
+      !== Array(blockchain.difficulty + 1).join('0')) {
+      return false;
+    }
+    let nullTransaction = 0;
+    for (let transaction of block.transactions) {
+      if (transaction.source === null) {
+        nullTransaction++;
+        if (nullTransaction > 1 ||
+          blockchain.reward !== transaction.amount) {
+          return false;
+        }
+      } else {
+        if (blockchain.getBalance(transaction.source) < transaction.amount) {
+          return false;
+        }
+      }
+    }
+  }
 
+  return true;
 };
 
 module.exports = {
